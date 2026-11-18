@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ロジみん読み上げ（きりたん×VOICEVOX）
 // @namespace    rojimin
-// @version      0.13
+// @version      0.14
 // @description  claude.ai で Claude の返信が出終わったら、VOICEVOX で読み上げる（キャラ切り替え付き）
 // @match        https://claude.ai/*
 // @grant        GM_xmlhttpRequest
@@ -25,6 +25,15 @@
   const INTONATION = 1.0;   // 抑揚        （標準 1.0／0〜2.0）
   const VOLUME = 1.0;       // 音量        （標準 1.0）
   // ※ユーザー辞書はVOICEVOXアプリで登録したものがそのまま効く
+  // ===== ロジみん辞書（起動時にVOICEVOXのユーザー辞書へ自動登録） =====
+  // pronunciation はカタカナ、accent は「何音目が高いか」（0 = 平板）。
+  // ここに足して保存＆F5すれば登録される。VOICEVOXアプリ側の辞書にも入る。
+  const ROJIMIN_DICT = [
+    { surface: '紅魔族',   pronunciation: 'コウマゾク',     accent: 3 },
+    { surface: 'めぐみん', pronunciation: 'メグミン',       accent: 0 },
+    { surface: 'ロジみん', pronunciation: 'ロジミン',       accent: 0 },
+    { surface: '爆裂魔法', pronunciation: 'バクレツマホウ', accent: 5 },
+  ];
   const MAX_CHUNK = 120;                    // 1回で合成する最大文字数
   const LOG = (...a) => console.log('[ロジみん読み上げ]', ...a);
 
@@ -454,6 +463,25 @@
 
   // Escキーでいま喋ってるのだけ止める
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') stopSpeaking(); });
+
+  // 起動時にロジみん辞書を登録（登録済みならそのまま、読みを変えていたら更新）
+  async function syncDict() {
+    const toZenkaku = (t) => t.replace(/[!-~]/g, (c) => String.fromCharCode(c.charCodeAt(0) + 0xFEE0));
+    const current = JSON.parse(await gmRequest('GET', `${ENGINE}/user_dict`));
+    let added = 0, updated = 0;
+    for (const w of ROJIMIN_DICT) {
+      const q = `surface=${encodeURIComponent(w.surface)}&pronunciation=${encodeURIComponent(w.pronunciation)}`
+        + `&accent_type=${w.accent}&word_type=PROPER_NOUN&priority=8`;
+      const hit = Object.entries(current).find(([, v]) => v.surface === toZenkaku(w.surface));
+      if (!hit) {
+        await gmRequest('POST', `${ENGINE}/user_dict_word?${q}`); added++;
+      } else if (hit[1].pronunciation !== w.pronunciation || hit[1].accent_type !== w.accent) {
+        await gmRequest('PUT', `${ENGINE}/user_dict_word/${hit[0]}?${q}`); updated++;
+      }
+    }
+    LOG(`ロジみん辞書: 追加${added}件／更新${updated}件（全${ROJIMIN_DICT.length}語）`);
+  }
+  syncDict().catch((e) => LOG('辞書登録できず:', e.message));
 
   // 起動時にキャラ一覧を読み込み、選択中の声を先に起こしておく（初回の待ちを減らす）
   loadSpeakers()
