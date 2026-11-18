@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ロジみん読み上げ（きりたん×VOICEVOX）
 // @namespace    rojimin
-// @version      0.11
+// @version      0.12
 // @description  claude.ai で Claude の返信が出終わったら、VOICEVOX で読み上げる（キャラ切り替え付き）
 // @match        https://claude.ai/*
 // @grant        GM_xmlhttpRequest
@@ -130,7 +130,7 @@
       blocks.forEach((n) => n.querySelectorAll('li, p, br').forEach((c) => c.append('\n')));
       t = blocks.map((n) => n.textContent.trim())
         // 作業表示（「ウェブを検索しました」等）は句読点なしの短い「〜しました」なので除外
-        .filter((s) => !(s.length < 40 && /しました$/.test(s) && !/[。！？!?]/.test(s)))
+        .filter((s) => !(s.length < 40 && /(しました|が必要です|待っています|中です)$/.test(s) && !/[。！？!?]/.test(s)))
         .join('\n');
     } else {
       t = clone.textContent || '';
@@ -211,19 +211,26 @@
       const t = extractText(el);
       if (t.length > best.length) best = t;
     }
-    // 同じ返信の「遅れてきた完了合図」（ほぼ同じ文章）は読み直さない
-    const head = (s) => s.slice(0, 40);
-    if (!best || (lastSpokenText && head(best) === head(lastSpokenText))) {
+    if (!best) return;
+    let toSpeak = best;
+    if (lastSpokenText && best.startsWith(lastSpokenText)) {
+      // 途中で止まった返信（承認待ちなど）の続き → まだ読んでいない部分だけ読む
+      toSpeak = best.slice(lastSpokenText.length).trim();
+      if (!toSpeak) { LOG('同じ返信なのでスキップ'); return; }
+      LOG('続きだけ読みます');
+    } else if (lastSpokenText && best.slice(0, 40) === lastSpokenText.slice(0, 40)) {
+      // 同じ返信の「遅れてきた完了合図」（ほぼ同じ文章）は読み直さない
       LOG('同じ返信なのでスキップ'); return;
     }
     lastSpokenText = best;
-    LOG(`取得した文章（候補${cands.length}件）:`, best.slice(0, 80) + (best.length > 80 ? '…' : ''));
-    speak(best);
+    LOG(`取得した文章（候補${cands.length}件）:`, toSpeak.slice(0, 80) + (toSpeak.length > 80 ? '…' : ''));
+    speak(toSpeak);
   }
 
   function check(el) {
     const v = el.getAttribute('data-is-streaming');
-    if (v === 'true') { seenStreaming.add(el); return; }
+    // 承認待ちなどで一度止まった返信が再開したら、もう一度「完了」を拾えるようにする
+    if (v === 'true') { seenStreaming.add(el); spoken.delete(el); return; }
     if (v === 'false' && seenStreaming.has(el) && !spoken.has(el)) {
       spoken.add(el);
       pending.push(el);
