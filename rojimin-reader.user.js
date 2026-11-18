@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ロジみん読み上げ（きりたん×VOICEVOX）
 // @namespace    rojimin
-// @version      0.12
+// @version      0.13
 // @description  claude.ai で Claude の返信が出終わったら、VOICEVOX で読み上げる（キャラ切り替え付き）
 // @match        https://claude.ai/*
 // @grant        GM_xmlhttpRequest
@@ -128,9 +128,13 @@
     let t;
     if (blocks.length) {
       blocks.forEach((n) => n.querySelectorAll('li, p, br').forEach((c) => c.append('\n')));
-      t = blocks.map((n) => n.textContent.trim())
-        // 作業表示（「ウェブを検索しました」等）は句読点なしの短い「〜しました」なので除外
-        .filter((s) => !(s.length < 40 && /(しました|が必要です|待っています|中です)$/.test(s) && !/[。！？!?]/.test(s)))
+      // 作業表示（「ウェブを検索しました」「入力が必要です」等）は、
+      // 段落(p)で・短くて・句読点(、。！？)がなく・決まった語尾で終わる。箇条書きや見出しは対象外
+      const isStatus = (n, s) => n.tagName === 'P' && s.length < 30
+        && /(しました|が必要です|待っています|中です)$/.test(s) && !/[、。！？!?]/.test(s);
+      t = blocks.map((n) => [n, n.textContent.trim()])
+        .filter(([n, s]) => !isStatus(n, s))
+        .map(([, s]) => s)
         .join('\n');
     } else {
       t = clone.textContent || '';
