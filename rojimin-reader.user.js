@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ロジみん読み上げ（きりたん×VOICEVOX）
 // @namespace    rojimin
-// @version      0.17
+// @version      0.18
 // @description  claude.ai で Claude の返信が出終わったら、VOICEVOX で読み上げる（キャラ切り替え付き）
 // @match        https://claude.ai/*
 // @grant        GM_xmlhttpRequest
@@ -493,5 +493,5 @@
     .then(() => LOG('声の準備完了'))
     .catch((e) => LOG('準備できず（VOICEVOX起動後に再読み込みしてください）:', e.message));
 
-  LOG('起動しました');
+  LOG('起動しました（v0.18：自動更新テスト成功！）');
 })();
