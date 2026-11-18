@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ロジみん読み上げ（きりたん×VOICEVOX）
 // @namespace    rojimin
-// @version      0.16
+// @version      0.17
 // @description  claude.ai で Claude の返信が出終わったら、VOICEVOX で読み上げる（キャラ切り替え付き）
 // @match        https://claude.ai/*
 // @grant        GM_xmlhttpRequest
@@ -10,6 +10,8 @@
 // @connect      127.0.0.1
 // @connect      localhost
 // @run-at       document-idle
+// @updateURL    https://raw.githubusercontent.com/natsuki1204s-hash/rojimin-reader/main/rojimin-reader.user.js
+// @downloadURL  https://raw.githubusercontent.com/natsuki1204s-hash/rojimin-reader/main/rojimin-reader.user.js
 // ==/UserScript==
 
 (function () {
@@ -33,6 +35,7 @@
     { surface: 'めぐみん', pronunciation: 'メグミン',       accent: 1 },
     { surface: 'ロジみん', pronunciation: 'ロジミン',       accent: 1 },
     { surface: '爆裂魔法', pronunciation: 'バクレツマホウ', accent: 5 },
+    { surface: 'README',   pronunciation: 'リードミー',     accent: 3 },
   ];
   const MAX_CHUNK = 120;                    // 1回で合成する最大文字数
   const LOG = (...a) => console.log('[ロジみん読み上げ]', ...a);
