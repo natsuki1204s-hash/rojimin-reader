@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ロジみん読み上げ（きりたん×VOICEVOX）
 // @namespace    rojimin
-// @version      0.15
+// @version      0.16
 // @description  claude.ai で Claude の返信が出終わったら、VOICEVOX で読み上げる（キャラ切り替え付き）
 // @match        https://claude.ai/*
 // @grant        GM_xmlhttpRequest
@@ -31,7 +31,7 @@
   const ROJIMIN_DICT = [
     { surface: '紅魔族',   pronunciation: 'コウマゾク',     accent: 1 },
     { surface: 'めぐみん', pronunciation: 'メグミン',       accent: 1 },
-    { surface: 'ロジみん', pronunciation: 'ロジミン',       accent: 0 },
+    { surface: 'ロジみん', pronunciation: 'ロジミン',       accent: 1 },
     { surface: '爆裂魔法', pronunciation: 'バクレツマホウ', accent: 5 },
   ];
   const MAX_CHUNK = 120;                    // 1回で合成する最大文字数
