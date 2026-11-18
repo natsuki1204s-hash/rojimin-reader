@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ロジみん読み上げ（きりたん×VOICEVOX）
 // @namespace    rojimin
-// @version      0.14
+// @version      0.15
 // @description  claude.ai で Claude の返信が出終わったら、VOICEVOX で読み上げる（キャラ切り替え付き）
 // @match        https://claude.ai/*
 // @grant        GM_xmlhttpRequest
@@ -29,8 +29,8 @@
   // pronunciation はカタカナ、accent は「何音目が高いか」（0 = 平板）。
   // ここに足して保存＆F5すれば登録される。VOICEVOXアプリ側の辞書にも入る。
   const ROJIMIN_DICT = [
-    { surface: '紅魔族',   pronunciation: 'コウマゾク',     accent: 3 },
-    { surface: 'めぐみん', pronunciation: 'メグミン',       accent: 0 },
+    { surface: '紅魔族',   pronunciation: 'コウマゾク',     accent: 1 },
+    { surface: 'めぐみん', pronunciation: 'メグミン',       accent: 1 },
     { surface: 'ロジみん', pronunciation: 'ロジミン',       accent: 0 },
     { surface: '爆裂魔法', pronunciation: 'バクレツマホウ', accent: 5 },
   ];
